@@ -1,0 +1,44 @@
+﻿@using Blog.ViewModels
+@model CreateBlogPostViewModel
+@{
+    ViewData["Title"] = "Create new post";
+}
+
+<h1 class="text-center my-4">
+    Create a New Post
+</h1>
+<form asp-action="Create" method="post" class="form-horizontal">
+    <input type="hidden" asp-for="AuthorId" name="AuthorId" />
+    <div class="row justify-content-center">
+        <div class="col-lg-9 col-md-12 mb-3">
+            <div class="card">
+                <div class="card-header">@ViewBag.Title</div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label asp-for="Title" class="form-label">Title</label>
+                        <input asp-for="Title" class="form-control" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Body" class="form-label">Body</label>
+                        <textarea asp-for="Body" class="form-control" rows="5" cols="40"></textarea>
+                        <span asp-validation-for="Body" class="text-danger"></span>
+
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Tags" class="form-label">Tags(seperated by spaces)</label>
+                        <input asp-for="Tags" class="form-control" />
+                        <span asp-validation-for="Tags" class="text-danger"></span>
+                    </div>
+
+                </div>
+                <div class="card-footer text-right">
+                    <input type="submit" class="btn btn-primary btn-block" value="Publish" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+</form>

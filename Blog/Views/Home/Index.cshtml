@@ -1,0 +1,32 @@
+﻿@model IEnumerable<BlogPost>
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4 my-4">Latest Blog Posts</h1>
+</div>
+
+<div class="row d-flex align-items-center justify-content-center">
+    <div class="col-md-8">
+        @foreach(var post in Model)
+        {
+            <a asp-controller="BlogPost" asp-action="Detail" asp-route-id=@post.Id class="text-reset text-decoration-none">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h2 class="card-title">@post.Title</h2>
+                        <p class="card-text text-truncate">@post.Body</p>
+                    </div>
+                    <div class="card-footer text-muted">
+                        @foreach(var tag in post.Tags.Split())
+                        {
+                            <span class="badge badge-pill bg-secondary">@tag</span>
+                        }
+                        Posted on <span class="badge badge-pill bg-success text-white">@DateOnly.FromDateTime(post.CreatedAt)</span> 
+                        by <span class="badge badge-pill bg-primary text-white">@post.Author.Name</span>
+                    </div>
+                </div>
+            </a>
+        }
+    </div>
+</div>

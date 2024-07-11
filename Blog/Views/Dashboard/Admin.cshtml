@@ -1,0 +1,43 @@
+﻿@model List<User>?
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+<div class="d-flex justify-content-between">
+    <h1 class="h3 mb-0">@ViewBag.Title</h1>
+    <a class="btn btn-primary btn-sm" asp-area="" asp-controller="Account" asp-action="Register">Add New</a>
+</div>
+
+<hr />
+
+@if (Model != null && Model.Count > 0)
+{
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Username</th>
+                            <th>Number of posts</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    @foreach (var author in Model)
+                    {
+                        <tr>
+                            <td>@author.UserName</td>
+                            <td>@author.Posts?.Count</td>
+                            <td>
+                                <form asp-controller="Account" asp-action="Delete" method="post" class="d-inline">
+                                    <input type="hidden" name="userId" value="@author.Id" />
+                                    <input type="submit" class="btn btn-sm btn-outline-danger" value="Delete">
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+
+        </div>
+    </div>
+}

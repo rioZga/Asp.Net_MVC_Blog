@@ -1,0 +1,51 @@
+﻿@using Blog.ViewModels
+@using System.Globalization;
+@using Blog.Extensions;
+@model BlogPostDetailViewModel
+@{
+    ViewData["Title"] = Model.BlogPost.Title;
+}
+
+<div class="container">
+    <main role="main">
+        <div class="row">
+            <div class="col-md-8 blog-main">
+                <div class="blog-post">
+                    <h2 class="blog-post-title">@Model.BlogPost.Title</h2>
+                    <p class="blog-post-meta">@Model.BlogPost.CreatedAt.ToString("MMMM d, yyyy", CultureInfo.InvariantCulture) by @Model.BlogPost.Author.Name</p>
+                    <p class="text-break">@Model.BlogPost.Body</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div>
+        <h5 class="pb-3 mb-4 font-italic border-bottom">Comments</h5>
+        @if (Model.BlogPost.Comments != null && Model.BlogPost.Comments.Count > 0)
+        {
+            @foreach (var comment in Model.BlogPost.Comments)
+            {
+                <div class="d-flex gap-3 border-bottom pb-2 mb-2">
+                    <img src="https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg"
+                         class="rounded-circle " style="width: 40px; height: 40px"
+                         alt="Avatar" />
+                    <div class="d-flex flex-column">
+                        <p class="text-muted"> <span class="fw-bold">@comment.Author</span> • <span>@comment.CreatedAt.ToRelativeTime()</span></p>
+                        <p class="text-wrap">@comment.Content</p>
+                    </div>
+                </div>
+            }
+
+        }
+        <form asp-controller="Comment" asp-action="Comment">
+            <div class="d-flex flex-column gap-3">
+                <input type="hidden" asp-for="NewComment.BlogPostId" value="@Model.BlogPost.Id" />
+                <textarea asp-for="NewComment.Content" placeholder="Add a comment" rows="2" cols="40" class="w-50"></textarea>
+                <div class="d-flex gap-3">
+                    <input placeholder="Username" asp-for="NewComment.Author" />
+                    <input type="submit" class="btn btn-outline-dark" value="submit">
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
