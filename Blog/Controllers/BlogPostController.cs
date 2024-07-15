@@ -12,11 +12,13 @@ namespace Blog.Controllers
     {
         private readonly AppDbContext _context;
         private readonly UserManager<User> _userManager;
+        private readonly IHttpClientFactory _factory;
 
-        public BlogPostController(AppDbContext context, UserManager<User> userManager)
+        public BlogPostController(AppDbContext context, UserManager<User> userManager, IHttpClientFactory factory)
         {
             _context = context;
             _userManager = userManager;
+            _factory = factory;
         }
         public IActionResult Index()
         {
@@ -24,13 +26,10 @@ namespace Blog.Controllers
         }
 
         [HttpGet]
-        public IActionResult Detail(int id)
+        public async Task<IActionResult> Detail(int id)
         {
-            var blog = _context.BlogPosts.Include(p => p.Comments).Include(p => p.Author).FirstOrDefault(p => p.Id == id);
-            if (blog == null)
-            {
-                return NotFound();
-            }
+            var client = _factory.CreateClient("blogWebApi");
+            var blog = await client.GetFromJsonAsync<BlogPost>($"api/BlogPost/{id}");
 
             var blogPostDetail = new BlogPostDetailViewModel
             {

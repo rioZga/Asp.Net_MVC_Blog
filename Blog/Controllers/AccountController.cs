@@ -1,9 +1,12 @@
 ﻿using Blog.Data;
 using Blog.Models;
 using Blog.ViewModels;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Blog.Controllers
 {
@@ -12,21 +15,52 @@ namespace Blog.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly AppDbContext _context;
+        private readonly IHttpClientFactory _factory;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, RoleManager<IdentityRole> roleManager, AppDbContext context)
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, AppDbContext context, IHttpClientFactory factory)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _roleManager = roleManager;
             _context = context;
+            _factory = factory;
         }
 
         public IActionResult Login()
         {
             return View();
         }
+
+        //[HttpPost]
+        //public async Task<IActionResult> Login(LoginViewModel loginVM)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return View(loginVM);
+        //    }
+
+        //    var user = await _userManager.FindByNameAsync(loginVM.Name);
+        //    if (user == null)
+        //    {
+        //        ModelState.AddModelError("", "Invalid credentials, please try again.");
+        //        return View(loginVM);
+        //    }
+        //    var passwordCheck = await _userManager.CheckPasswordAsync(user, loginVM.Password);
+        //    if (!passwordCheck)
+        //    {
+        //        ModelState.AddModelError("", "Invalid credentials, please try again.");
+        //        return View(loginVM);
+        //    }
+        //    //await _userStore.SetUserNameAsync(user, loginVM.Name, CancellationToken.None);
+        //    var result = await _signInManager.PasswordSignInAsync(user, loginVM.Password, false, false);
+        //    if (!result.Succeeded)
+        //    {
+        //        ModelState.AddModelError("", "Invalid credentials, please try again.");
+        //        return View(loginVM);
+        //    }
+
+        //    return RedirectToAction("Index", "Home");
+        //}
 
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel loginVM)
@@ -36,27 +70,27 @@ namespace Blog.Controllers
                 return View(loginVM);
             }
 
-            var user = await _userManager.FindByNameAsync(loginVM.Name);
-            if (user == null)
+            var client = _factory.CreateClient("blogWebApi");
+            var response = await client.PostAsJsonAsync("api/account/login", loginVM);
+            if (response.IsSuccessStatusCode)
             {
-                ModelState.AddModelError("", "Invalid credentials, please try again.");
-                return View(loginVM);
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, loginVM.Name),
+                    new Claim(ClaimTypes.Role, UserRoles.Author),
+                };
+
+                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(claimsIdentity));
+                return RedirectToAction("Index", "Home");
             }
-            var passwordCheck = await _userManager.CheckPasswordAsync(user, loginVM.Password);
-            if (!passwordCheck)
-            {
-                ModelState.AddModelError("", "Invalid credentials, please try again.");
-                return View(loginVM);
-            }
-            //await _userStore.SetUserNameAsync(user, loginVM.Name, CancellationToken.None);
-            var result = await _signInManager.PasswordSignInAsync(user, loginVM.Password, false, false);
-            if (!result.Succeeded)
+            else
             {
                 ModelState.AddModelError("", "Invalid credentials, please try again.");
                 return View(loginVM);
             }
 
-            return RedirectToAction("Index", "Home");
         }
 
         public IActionResult Register()
@@ -88,7 +122,7 @@ namespace Blog.Controllers
 
             //var newUser = CreateUser();
             //await _userStore.SetUserNameAsync(newUser, registerVM.Name, CancellationToken.None);
-            
+
             var result = await _userManager.CreateAsync(newUser, registerVM.Password);
             if (!result.Succeeded)
             {

@@ -28,6 +28,11 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
 });
 
+builder.Services.AddHttpClient("blogWebApi", (httpClient) =>
+{
+    httpClient.BaseAddress = new Uri("https://localhost:7187");
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

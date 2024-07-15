@@ -19,14 +19,14 @@ namespace Blog.Controllers
         }
 
         [HttpPost]
-        public IActionResult Comment(BlogPostDetailViewModel blogPostDetail)
+        public IActionResult Comment(NewComment newComment)
         {
 
             var comment = new Comment
             {
-                Author = blogPostDetail.NewComment.Author,
-                Content = blogPostDetail.NewComment.Content,
-                BlogPostId = blogPostDetail.NewComment.BlogPostId,
+                Author = newComment.Author,
+                Content = newComment.Content,
+                BlogPostId = newComment.BlogPostId,
                 CreatedAt = DateTime.Now,
             };
 
