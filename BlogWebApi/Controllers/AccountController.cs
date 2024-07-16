@@ -1,6 +1,7 @@
 ﻿using Blog.Data;
 using Blog.Models;
 using BlogWebApi.Dtos;
+using BlogWebApi.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
@@ -14,37 +15,37 @@ namespace BlogWebApi.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
+        private readonly IAuthService _authService;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager)
+        public AccountController(IAuthService authService)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
+            _authService = authService;
         }
 
         [HttpPost("Login")]
         public async Task<IActionResult> Login(LoginDto loginDto)
         {
-            var user = await _userManager.FindByNameAsync(loginDto.Name);
-            if (user == null)
-            {
-                return BadRequest();
-            }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            var passwordCheck = await _userManager.CheckPasswordAsync(user, loginDto.Password);
-            if (!passwordCheck)
-            {
-                return BadRequest();
-            }
+            var result = await _authService.Login(loginDto);
+            if (!result.Success)
+                return Unauthorized(result.Message);
 
-            var result = await _signInManager.PasswordSignInAsync(user, loginDto.Password, false, false);
-            if (!result.Succeeded)
-            {
-                return BadRequest();
-            }
+            return Ok(result);
+        }
 
-            return Ok();
+        [HttpPost("Register")]
+        public async Task<IActionResult> Register(RegisterDto registerDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _authService.Register(registerDto);
+            if (!result.Success)
+                return BadRequest(result.Message);
+            
+            return Ok(result);
         }
     }
 }
