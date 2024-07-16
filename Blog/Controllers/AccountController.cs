@@ -48,7 +48,6 @@ namespace Blog.Controllers
                 ModelState.AddModelError("", "Invalid credentials, please try again.");
                 return View(loginVM);
             }
-            //await _userStore.SetUserNameAsync(user, loginVM.Name, CancellationToken.None);
             var result = await _signInManager.PasswordSignInAsync(user, loginVM.Password, false, false);
             if (!result.Succeeded)
             {
@@ -86,8 +85,6 @@ namespace Blog.Controllers
                 UserName = registerVM.Name,
             };
 
-            //var newUser = CreateUser();
-            //await _userStore.SetUserNameAsync(newUser, registerVM.Name, CancellationToken.None);
             
             var result = await _userManager.CreateAsync(newUser, registerVM.Password);
             if (!result.Succeeded)
@@ -130,18 +127,5 @@ namespace Blog.Controllers
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
         }
-        //private User CreateUser()
-        //{
-        //    try
-        //    {
-        //        return Activator.CreateInstance<User>();
-        //    }
-        //    catch
-        //    {
-        //        throw new InvalidOperationException($"Can't create an instance of '{nameof(User)}'. " +
-        //            $"Ensure that '{nameof(User)}' is not an abstract class and has a parameterless constructor, or alternatively " +
-        //            $"override the register page in /Areas/Identity/Pages/Account/Register.cshtml");
-        //    }
-        //}
     }
 }
