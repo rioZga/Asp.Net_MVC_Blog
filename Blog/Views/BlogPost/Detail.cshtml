@@ -4,11 +4,16 @@
 @model BlogPostDetailViewModel
 @{
     ViewData["Title"] = Model.BlogPost.Title;
+    var blog = Model.BlogPost;
 }
 
 <div class="container">
     <main role="main">
         <div class="row">
+            @if (blog.Image != null)
+            {
+                <img src="@Model.BlogPost.Image" alt="blogpost image" height="500" />
+            }
             <div class="col-md-8 blog-main">
                 <div class="blog-post">
                     <h2 class="blog-post-title">@Model.BlogPost.Title</h2>

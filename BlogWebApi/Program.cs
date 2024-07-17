@@ -23,6 +23,8 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.Configure<JwtOptions>(
     builder.Configuration.GetSection("JWT"));
+builder.Services.Configure<CloudinarySettings>(
+    builder.Configuration.GetSection("CloudinarySettings"));
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
@@ -34,6 +36,7 @@ builder.Services.AddIdentity<User, IdentityRole>()
 
 builder.Services.AddSingleton<JwtHelper>();
 builder.Services.AddTransient<IAuthService, AuthService>();
+builder.Services.AddTransient<IImageService, ImageService>();
 
 
 builder.Services.AddAuthentication(options =>

@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Http;
+using System.Net.Http.Headers;
 
 namespace Blog.Controllers
 {
@@ -57,11 +59,26 @@ namespace Blog.Controllers
 
         [HttpPost]
         [Authorize(Roles = UserRoles.Author)]
-        public IActionResult Create(CreateBlogPostViewModel blogPostVM)
+        public async Task<IActionResult> Create(CreateBlogPostViewModel blogPostVM)
         {
             if (!ModelState.IsValid)
             {
                 return View(blogPostVM);
+            }
+
+            string? imageUrl = null;
+
+            if (blogPostVM.Image != null)
+            {
+                var client = _factory.CreateClient("blogWebApi");
+                var content = new MultipartFormDataContent();
+                var fileContent = new StreamContent(blogPostVM.Image.OpenReadStream());
+                fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("multipart/form-data");
+                content.Add(fileContent, "file", blogPostVM.Image.FileName);
+
+                var response = await client.PostAsync("/api/image/upload", content);
+                if (response.IsSuccessStatusCode)
+                    imageUrl = await response.Content.ReadAsStringAsync();
             }
 
             var blogPost = new BlogPost
@@ -71,6 +88,7 @@ namespace Blog.Controllers
                 Body = blogPostVM.Body,
                 CreatedAt = DateTime.Now,
                 Tags = blogPostVM.Tags,
+                Image = imageUrl,
             };
             
             _context.BlogPosts.Add(blogPost);
@@ -130,6 +148,16 @@ namespace Blog.Controllers
             {
                 return NotFound();
             }
+
+            if (!String.IsNullOrEmpty(blog.Image))
+            {
+                var client = _factory.CreateClient("blogWebApi");
+                client.PostAsJsonAsync("/api/image/delete", new
+                {
+                    Url = blog.Image
+                });
+            }
+
             _context.BlogPosts.Remove(blog);
             _context.SaveChanges();
             return Redirect("/");
